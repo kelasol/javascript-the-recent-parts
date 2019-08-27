@@ -45,13 +45,21 @@ In our example above, we have this word `formatCurrency` it's on another line, b
 - What it's doing is it's declaratively tagging that string to say before it finishes I want it to be processed with this function.  
 - It's actually a function call, it doesn't look like it, bit it's a special kind of function call, called a **tagged template string** / **tagged template literal**.
 
-Our Example:
+Our Example:  
 We don't just want that value in string format, we want to actually format it to look like US currency.
 
-
+- **tag functions** are essentially a way to pre-process your string, do some sort of formatting on it, either of the strings or the values or both depending on what you need. Useful for things like, escaping HTML, or Language substitution, localization, etc,. 
+- The great part is that you don't have to write your own as many existing tag functions exist in other libraries, npm, wherever.
 
 ## Applying Tagged Templates
+KS kept console.logging things when debugging, but [object object] or [ error ] isn't particularly useful, so he wrote a logger tagged function that will parse stack traces or JSON to give him readable debugging output.
+- Some people have taken them even further, because a string literal doesn't even have to return a string, it could in fact return something else entirely.
+    - making regex tag functions, to make regexs more human multi-line readable.
+    - JSX for instance, is HTML like stuff inside of JS, returns actual dom object like you'd expect in JSX
+    - it's almost like a mini-language inside of JS (in fact people have created this mini-languages)
+        - Tremendously powerful
+        - great extension point for extending declarative power of JS
 
-## Tagged Template Exercise
 ## Tagged Template Solution
+
 ## Padding & Trimming

@@ -16,8 +16,8 @@ Notes are organzied by video section as structured by FEM.
 - [ ] Phase 3: Review 
 
 ## Table of Contents
-- Introduction:
-- Strings:
+- Introduction: [1-Introduction.md](https://github.com/kelasol/javascript-the-recent-parts/blob/master/1-Introduction.md)
+- Strings: [2-Strings.md](https://github.com/kelasol/javascript-the-recent-parts/blob/master/2-Strings.md)
 - Array Destructuring:
 - Object Destructuring:
 - Further Destructuring:
