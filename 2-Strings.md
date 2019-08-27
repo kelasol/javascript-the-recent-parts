@@ -1,1 +1,57 @@
 # Strings
+## Template Strings
+### Template Strings (Interpolated Literals)
+- KS using template strings on a daily basis.
+- "Interpoliterals" (the name KS likes to call these)
+- KS doesn't believe this is a really good name for them, because template implies reusablity where as these are like a one-time thing like IIFEs.
+
+### What problem are Template Strings trying to solve for?
+- String concatenation
+- data type combination, variables, and numbers, etc.
+- **Interpolation**: Concatenating strings with other data types is a feature in mayn other languages. e.g. Double quotes strings vs Single quoted in PHP behave differently.
+- The string concatenation that we're all used to is a great example of a very imperative approach of programming (its not ideal at all because we have to essentially, mentally execute this code, break into pieces and figure out where the concatenation operators are)
+- A much better approach would be to declare what we want our final string to be and keep placeholders f or where we want values to be dropped in.
+- The spec can't change double or single quotes. So a new symbol had to be used, that is the _backtick operator_ or `` ` `` to indicate its a template string.
+
+``` javascript
+var name = "kyle"
+var msg = `Welcome ${name}`
+```
+- Dollar sign + curly braces filled with any expression or variable.
+
+- Why template is confusing is because it's not really appropriate to think of it as a thing that will produce a string (like a template) it is the string itself.
+    - it's just the fact that there's a bit of pre-processing that goes in as that string is happening.
+    - Kind of like an IIFE (contructs and builds that string immediately, an actual primtive string is generated)
+
+- A note on backticks: frustrating for those of us who use markdown. Understand why it was chosen visually.
+
+- Use this a lot in `console.log `messages.
+- Backticks: also break across lines, continue strings on to another line without a backslash. Just be aware tab or newline in that string will be in that string.
+
+## Tagged Templates
+- Also string literals or template literals have another feature on them which allows you to more fully control that pre-processing process when the string is generated...
+```javascript
+var amount - 12.3;
+
+var msg = 
+    formatCurrency
+`The total for your oder is ${amount}`;
+
+// The total for your 
+// order is $12.30
+```
+- **Tagged Literals**  
+In our example above, we have this word `formatCurrency` it's on another line, but there is no operator between the two. This seems strange because you wouldn't be able to put an identifier immediately in front of a double or single quote (that would be a JS error, here it's allowed).
+- What it's doing is it's declaratively tagging that string to say before it finishes I want it to be processed with this function.  
+- It's actually a function call, it doesn't look like it, bit it's a special kind of function call, called a **tagged template string** / **tagged template literal**.
+
+Our Example:
+We don't just want that value in string format, we want to actually format it to look like US currency.
+
+
+
+## Applying Tagged Templates
+
+## Tagged Template Exercise
+## Tagged Template Solution
+## Padding & Trimming
