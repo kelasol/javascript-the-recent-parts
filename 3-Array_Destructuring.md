@@ -92,18 +92,252 @@ function data() {
     return [1,2,3];
 }
 
+var tmp;
 var [
     first,
     second,
     third,
     ...fourth
-] = data()
+] = tmp = data()
 ```
 - In the instance that our return data length is less than 4, in both styles, because of how slice works, we would get returned to us an empty array.
 - A note on the _gather syntax_ is that it must occur at the very end of the pattern, because it's gathering everything up the rest of the values.
 
+- Notice there is a difference in outcome between these two programs:
+    - There is a `tmp` variable on one side and not the other.
+    - an important difference because it speaks to the idea that when you destructure, you're just sort of ephemerally saying, I want this structure to exist for this brief period of time and then throw away the big structure, which is often what you want. But it might be the case that you want to have a reference to the whole structure as well...
+        - Imperative: `var temp = dat()`
+            - Just have a var temp equal to data and then break it down, which is exactly how we would do it with destructuring...
+        - Declarative: `var [ ... ] = tmp = data();`
+            - Note the `var tmp` must have previously been declared in proceeding lines.
+            - Get tmp assigned the array, and then that array is going to get destructured by this pattern
+            - So, useful if you need to get access to both the value and it's destructured parts, you just simpmly chain an equals together.
+            - common to have reference over on the right next to where the value is (tmp close to data) and have the destructuring pattern to the left of it, but technically you can do it in the other order
 
 ## Declaration & Assignment
+Continuing with our previous example...
+```javascript
+// IMPERATIVE APPROACH
+function data() {
+    return [1,2,3];
+}
+
+var tmp = data();
+var first, second, third, fourth;
+
+first = tmp[0]; 
+second = tmp[1]; 
+third = tmp[2]; 
+fourth = tmp.slice(3);
+```
+```javascript
+// DECLARATIVE APPROACH
+function data() {
+    return [1,2,3];
+}
+
+var tmp;
+var first, second, third, fourth;
+var [
+    first,
+    second,
+    third,
+    ...fourth
+] = tmp = data()
+```
+So notice on our Imperative side, that we have done var declarations with the assignment. But if we've already declared those variables (`var first, second, third;`) then we could have done those assignments without any var declarations.
+- What we are getting at here is that: **the assignments aren't inherently related to the declarations**, that's just the convenience you can do assignment along with declaration. The same is true of destructuring...
+    - We could have just declared those variables first, separate of destructuring
+    - **destructuring is actually about the assignment; not the declaration**
+    - That means that if we can assign them to variables that already exist, we can also assign them to entirely other locations, any valid left-hand side target...
+
+#### Object Assignment
+```javascript
+// IMPERATIVE APPROACH
+function data() {
+    return [1,2,3];
+}
+
+var tmp = data();
+var o = {};
+
+o.first = tmp[0]; 
+o.second = tmp[1]; 
+o.third = tmp[2]; 
+o.fourth = tmp.slice(3);
+```
+```javascript
+// DECLARATIVE APPROACH
+function data() {
+    return [1,2,3];
+}
+
+var tmp;
+var o = {};
+var [
+    o.first,
+    o.second,
+    o.third,
+    ...o.fourth
+] = tmp = data()
+```
+#### Array Destructuring and Assignment
+- You could even do the same with arrays...
+```javascript
+// IMPERATIVE APPROACH
+function data() {
+    return [1,2,3];
+}
+
+var tmp = data();
+var o = [];
+
+o[3] = tmp[0]; 
+o[10] = tmp[1]; 
+o[42] = tmp[2]; 
+o[100] = tmp.slice(3);
+```
+```javascript
+// DECLARATIVE APPROACH
+function data() {
+    return [1,2,3];
+}
+
+var tmp;
+var o = [];
+
+var [
+    o[3],
+    o[10],
+    o[42],
+    ...o[100]
+] = tmp;
+```
+- **Array destructuring** is just the assignment part, not the declaration part.
+- Anything we can validly assign to in the imperative form is also okay to show up in the declarative form
+    - for instance, we couldn't do... (imparatively)  
+    `var o = [];`...             
+    `var o[3] = tmp[0];`
+    
+    - Just as we couldn't do...(declaratively)
+    ```  
+    var o = [];   
+    var [    
+        o[3],
+        //...
+    ]
+    ```
+    - Both the above are not syntactically valid.
+
+- Just as we said earlier that we can put the assignment on either side we could do...
+```javascript
+function data() {
+    return [1,2,3]
+}
+
+var tmp;
+var o = [];
+tmp = [
+    o[3],
+    o[10],
+    o[42],
+    ...o[100]
+] = data();
+```
+Now here is where people will often get confused because if this was a subset, and left out `o[3]` and `o[10]`...
+```javascript
+function data() {
+    return [1,2,3]
+}
+
+var tmp;
+var o = [];
+tmp = [
+    o[42],
+    ...o[100]
+] = data();
+```
+- Looking at the above you might be confused, and not think that tmp is not going to point at the entire array.
+    - You might think that tmp is only going to point at the subset that we see in the pattern but...
+    - You have to understand that the way assignment expressions work (even just `x = 3`) is that, **the result of the assignment expression is the entire value that was subject to assignment.**
+    - So looking at the above, the result of this assignment expression is the entire array [1,2,3] regardless of how or how little of it was assignment off.
+    - _May be helpful to think about it by looking at both results of the equal signs, in our example, the first equal specifies the pattern of destructure, but the second equals is the array returned by data()_
+    - That's why more typically, if we need to also capture and destructure the whole object it's more common to see it like so...
+```javascript
+var tmp;
+var o = [];
+[
+    o[42],
+    ...o[100]
+] = tmp = data();
+```
+- There is a caveat though with the above that we will see with object destructuring.
+
 ## Comma Separation
+Going back to a previous example to demonstrate comma separation...
+```javascript
+// IMPERATIVE APPROACH
+function data() {
+    return [1,2,3];
+}
+
+var tmp = data();
+var first, second, third, fourth;
+
+first = tmp[0]; 
+//second = tmp[1]; 
+third = tmp[2]; 
+fourth = tmp.slice(3);
+```
+```javascript
+// DECLARATIVE APPROACH
+function data() {
+    return [1,2,3];
+}
+
+var tmp;
+var first, second, third, fourth;
+var [
+    first,
+    ,
+    third,
+    ...fourth
+] = tmp = data()
+```
+So what if we didn't care about the number 2?
+Imperatively, we would just not do that assignment, hence the uncomment.
+
+Well in a destructuring syntax, we can essentially have empty positions, which have the effect of not doing any assignment at all.
+- An empty position is just simply nothing in between the commas: here we put it on its own line so we aren't tempted to miss there are two commas, or something hideous like `,,,,,`
+- If leaving an empty space in a destructuring pattern, give it its own line.
+- This is called **array elision** by the way, and you can do this array elision at any place, beginning, middle or end. Might not make too much sense to do it at the end, but it may make sense to do it before a gather if you don't want those things included in the gather.
+- You can't do ranges, but you can slice data before destructuring it.
+
+#### Temporary Values
+If we had something like x and y and wanted to swap these values we would normally do something like...
+```javascript
+var x = 10;
+var y = 20;
+{
+    let tmp = x;
+    x = y;
+    y = tmp;
+}
+// Example uses ES6 block scoped declaratives.
+// Checkout ES6: The Right Parts, Specificaally: Arrow Functions, Block Scope, and Default Values and the Gather/Spread Operator
+ ```
+Well there is a trick that we can use with destructuring to make the swapping in this case, not need a temp variable...
+```javascript
+var x = 10;
+var y = 20;
+[y,x] = [x,y];
+ ```
+This is saying, I want y to take on whatever value is in this position (of the second "array"), and I want x to take whatever is in position y (of the second "array")
+- Not limited to 2, can be any number of swaps you need
+- Pretty declarative way of swapping: the values of [x,y] to be transposed to the values of [y,x]
+
 ## Parameter Arrays
+If we can do array destructurings on our assignment list, we can also do them in parameter positions...
+```
+
 ## Nested Array Destructuring
