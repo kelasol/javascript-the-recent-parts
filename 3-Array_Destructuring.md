@@ -338,6 +338,126 @@ This is saying, I want y to take on whatever value is in this position (of the s
 
 ## Parameter Arrays
 If we can do array destructurings on our assignment list, we can also do them in parameter positions...
+``` javascript
+
+function data(tmp) {
+    var [
+        first,
+        second,
+        third
+    ] = tmp;
+}
 ```
+We could do destructuring like above or we could actually do it in the paramater position...
+``` javascript
+function data([
+    first,
+    second,
+    third
+]) {
+    //...
+}
+```
+- we are essentially saying, don't care about the array passing it, just those three named values
+- noticed function signature is spread over multiple lines to make it as readable as possible
+
+### Dealing with null or non-array returns
+What if instead of an array we had null returned?
+```javascript
+// IMPERATIVE APPROACH
+function data() {
+    return null;
+}
+
+var tmp = data() || [];
+
+var first = tmp[0]; 
+var second = tmp[1]; 
+var third = tmp[2]; 
+var fourth = tmp.slice(3);
+```
+```javascript
+// DECLARATIVE APPROACH
+function data() {
+    return null;
+}
+
+var tmp;
+var [
+    first,
+    second,
+    third,
+    ...fourth
+] = tmp = data() || [];
+```
+- Destructuring syntax is essentially sugar for doing this imperative thing that we done before
+    - any error we would have before, we would still have declaratively with destructuring
+
+- Graceful fallbacks? 
+    - Default empty array... using the || operator
+    - We handle both cases in the same way
+
+### How would we handle a similar return for parameter arrays?
+``` javascript
+function data(tmp = []) {
+    var [
+        first,
+        second,
+        third
+    ] = tmp;
+}
+```
+Which would look like...
+``` javascript
+function data([
+    first,
+    second,
+    third
+] = []) {
+    //...
+}
+```
+:star: In fact it's a really good idea to put in default values, better to return undefined and fail gracefully than to fail hard with a type error.
+- We could even take it further and write fallback values as well....`first = 10`, etc...
 
 ## Nested Array Destructuring
+- What about subarrays?
+```javascript
+// IMPERATIVE APPROACH
+function data() {
+    return [1,[2,3],4];
+}
+
+var tmp = data() || [];
+
+var first = tmp[0]; 
+var tmp2 = tmp[1]; 
+var second = tmp2[0];
+var third = tmp[1]; 
+var fourth = tmp[2];
+```
+- In a destructuring pattern, we need to use another destructuring pattern... nested....
+```javascript
+// DECLARATIVE APPROACH
+function data() {
+    return [1,[2,3],4];
+}
+
+var tmp;
+var [
+    first,
+    [
+    second,
+    third,
+    ] = [],
+    ...fourth
+] = tmp = data() || [];
+```
+And you handle the subarray fallbacks as you would with other fallback value handling within the pattern with ...  `...[ second, third ] = [],...`
+    - Note in the declarative version (for subarrays) you would use the || operator.
+
+## Summary / Thoughts
+I think the thing that threw me for a second until I stepped away and thought about it was: how can you even predict the expected position of a desired value from the returned object? Like how do you know how far down you would need to write your patterns for? How is it that JS knows and auto-assigns the variables in an ordered fashion? Why can't I change that order? What if I wanted to the grab values starting in the middle of the returned data structure? Because we mentioned returned JSON objects from an API as a usecase for destructuring I had it in my mind to think of objects...so silly, Dumdum, this is array destructuring (we get into object destructuring later)! 
+
+ 
+ 
