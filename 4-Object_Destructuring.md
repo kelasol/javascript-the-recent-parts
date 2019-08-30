@@ -170,7 +170,13 @@ var  {
 - Be aware: very easy to forget nested defaults. KS recommends using a Linter and having a linting rule to remind you to put in defaults.
 
 ## Default Assignment Q & A
+- Interesting question about (1h57m) being specific in your default value for the would be empty array/object.
+- It's always best to put default values inline with pattern
+- If you put defaults within the array/object default, those defaults will only apply in the instance there is no array/object
+
 ## Parameter Objects
+
+
 ## Nested Objects & Array Destructuring
 
 
