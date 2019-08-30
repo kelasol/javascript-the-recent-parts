@@ -26,18 +26,18 @@ var {
     c: third
 } = data();
 ```
-No need for a tmp variable, we just need to make object destructuring pattern.
+No need for a `tmp` variable, we just need to make object destructuring pattern.
 - Instead of arrays with indexed position that we use as source, (we know, I mean eventually, we realize, see last sections Summary / Thougts section): if it showed up in first position of array destructuring that the source was the 0 index.
 - **In objects, since position doesn't matter, we have to tell it the source to be assigned**
     - We do so by giving it a property name
-    - `source : target`
+        - `source : target`
     - Position doesn't matter like in arrays, so we can have these in any position that is most readable for us
 
-- Extra stuff from object, not mentioned in the pattern gets ignored
+- Unmentioned properties/values in pattern get ignored
 
 ### What if we wanted to gather the unaccounted for properties in our object?
 Imperatively we would have to map over the object and filter/compare about already referenced ones, and all this other stuff. With destructuring it's easy:
-- Just like arrays we use `...`
+- Just like arrays we use the _spread operator_: `...`
 - `...third` in object destructuring created for us a whole separate object of our gathered values
 ```javascript
 // DECLARATIVE APPROACH
@@ -52,11 +52,11 @@ var {
 } = data();
 ```
 ### Setting Default Values
-Imperatively we could have done the same ternary... `!== undefined ? tmp.a : 42;`
+Imperatively we could have done the same ternary... `!== undefined ? tmp.a : 42;`  
 In destructuring approach, we just set a default: `a: first = 42,`
     - It looks a bit stranger here since 3 elements, you just need to remeber it's: `source : target = default`  
 
-### Let's talk about Order: Source : Target
+### Let's talk about Order... Source : Target (= Default)
 Why this order? It seems flipped! We're used to the inverse with objects.
 ```javascript
 var o = {
@@ -163,8 +163,7 @@ var  {
     a,
     b: {
         c,
-        d
-    } = {}
+        d } = {}
 } = data() || {};
 ```
 - Be aware: very easy to forget nested defaults. KS recommends using a Linter and having a linting rule to remind you to put in defaults.
@@ -175,8 +174,92 @@ var  {
 - If you put defaults within the array/object default, those defaults will only apply in the instance there is no array/object
 
 ## Parameter Objects
+Just as we talked about destructuring array paramaters, so too can we destructure object directly in the paramater position...  
 
-
+Instead of doing something like destructuring directly in the body...
+```javascript
+function data(tmp = {}) {
+    var {
+        a,
+        b
+    } = tmp;
+}
+```
+We can destructure in the parameter position...
+```javascript
+function data({
+        a,
+        b
+} = {}) {
+    //func body...
+}
+```
+The object in this example isn't going to be captured by any variable, so use if you don't need the original object anymore, otherwise destructure in the body.
+- Also note, this function can still take other parameters, listed right after the pattern, However...
+If we do array/object destructuring in a parameter position, KS will just pass all the stuff in the object of the array, never as other separate objects.
+ 
 ## Nested Objects & Array Destructuring
+- One of KS's fav thing about Obj destructuring.
+- When you are array destructuring (bc it's position based automatically), you can only destructure a position once, **when destructuring an object we can actually list it multiple times**.
+```javascript
+var obj = {
+    a: 1,
+    b: 2,
+    c: 3
+};
 
+// Ex.2 -Notice below how we reference the source, "b", more than once
+var {
+    a,
+    b,
+    b: W,
+    c
+} = obj;
 
+// Ex 3 - b as a nested object
+var {
+    a,
+    b,
+    b: {
+        x: W,
+        y
+    } = [],
+    c
+} = obj
+```
+- We can reference the source property as many times as we need to and target it to different locations
+    - Particularly useful when b is a sub-object/nested: Now we can grab both the whole object and destructure it as well.
+    - Also means we could destructure array patterns nested within objects and vice-versa.
+
+## Summary / Thoughts
+- In _array destructuring_ "source" is determined automatically by it's indexed (since the defining feature of an array is that fact that it is ordered by its sequential indicies).
+- That means b/c there isn't a way for the source to be inferred automatically: **we have to specify the source when destructuring objects.**
+- Sources from the object being returned that go unmentioned in our pattern will be ignored/not included.
+- If we wanted, just like arrays, could gather the unmentioned sources into their own object with the _spread operator_ `***`.
+- When destructuring objects it's important to remember that the pattern order is... `source : target = default`
+    - `source`: the name/property of the object being returned/provided.
+    - `target`: the location (or variable name) that the value of our source should be stored.
+    - `default`: the fallback value to be assigned to our target if source is empty.
+- Array destructuring allows you to have stand alone [] brackets to establish a destructing pattern for variables that have already been declared... You can't have standalone {} braces for object destructuring because JS interprets that as block-scope and specifying a pattern instead of a block is not valid syntax and an error will be thrown. To get around this we need to wrap the entire destructuring expression in parentheses.
+```javascript
+// DECLARATIVE APPROACH
+var first, second;
+({
+    a: first,
+    b: second
+} = data());
+```
+- Dealing with possible null values/returns for our destructured arrays/objects is by using the or pipe `||` after the whole array/object source (e.g. `var { a, b } = data() || {}` )
+- If source name and target name are the same, instead of doing `a : a` you can simply just say `a`.
+- Just like array destructuring we can destructure objects in the parameter position
+ If your targets are variables that have previously been declared and you're not destructuring the whole object, you'll need to use curly braces, wrapped around the entire destructuring expression (not just the pattern).
+```javascript
+// DECLARATIVE APPROACH
+var first, second;
+({
+    a: first,
+    b: second
+} = data());
+```
+- Nested objects/arrays within objects work just as they do in array destructuring.
+- Unlike array destructuring, object destructuring allows you to reference a source property multiple times, which also happens to be useful when we are destructuring objects/arrays within objects.

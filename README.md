@@ -18,8 +18,8 @@ Notes are organzied by video section as structured by FEM.
 ## Table of Contents
 - Introduction: [1-Introduction.md](https://github.com/kelasol/javascript-the-recent-parts/blob/master/1-Introduction.md)
 - Strings: [2-Strings.md](https://github.com/kelasol/javascript-the-recent-parts/blob/master/2-Strings.md)
-- Array Destructuring:
-- Object Destructuring:
+- Array Destructuring:[3-Array_Destructuring.md](https://github.com/kelasol/javascript-the-recent-parts/blob/master/3-Array_Destructuring.md)
+- Object Destructuring: [4-Object_Destructuring.md](https://github.com/kelasol/javascript-the-recent-parts/blob/master/4-Object_Destructuring.md)
 - Further Destructuring:
 - Array Methods:
 - Iterators & Generators:
