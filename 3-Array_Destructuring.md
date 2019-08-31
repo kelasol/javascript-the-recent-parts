@@ -220,7 +220,7 @@ var [
     `var o[3] = tmp[0];`
     
     - Just as we couldn't do...(declaratively)
-    ```  
+    ``` javascript
     var o = [];   
     var [    
         o[3],

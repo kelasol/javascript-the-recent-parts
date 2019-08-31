@@ -37,5 +37,10 @@ lookupRecord( {id: 42} );
     - Using this function, if you just want the defaults, just call the function without any args. : `var defaults = ajaxOptions();`, if you have settings/a settings object you can pass them in like... `ajax( ajaxOptions( settings ) );`
 
 ## Destructuring Exercise
+[Solo exercise attempt can be found here](https://github.com/kelasol/javascript-the-recent-parts/blob/master/exercises/destructuring/ex-first-attempt.js)   
+I think something that tripped me up is `slides` the nested object. The restructuring part. I think I thought it was a sufficient to just reference slides and not necessarily explain it's constituient parts.
 
-## Destructuring Solution
+- When `TestCase` is defined its taking in `data` as its parameter. The argument that we pass into `data` occurs when the function is invokedand we invoke it on line 25 within handleResponse.
+The argument we are passing in on line 25 is our in-parameter-position object destructuring  which is defining `data.properties` as targets and their source are the variables that are declared when we destructure in-param-pos of the `handleResponse` function (line 16-22). 
+- So the reason you can't just say `slides: slides` or `slides` in the `TestCase` invocation is: **In objects, unlike arrays, since position doesn't matter, the source must be specified or it will be ignored**. This means in a destructuring pattern, all nested objects(possibly arrays) will also be "destructured" based on the provided pattern. When you say `slides` you aren't providing an intelligible pattern to destructured the slides object and because you don't specificy the sources of the slides object to be destructured: `start` and `end`, JS does not give those values assignments in the interior to the TestCase function invocation.  
+ 
