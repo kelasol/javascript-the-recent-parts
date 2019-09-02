@@ -87,7 +87,7 @@ letters;
 ### The "bigger picture" value-add of iterators/iterables
 - Kyle Simpson: So `...` and `for of` are both syntactic support for the iterator protocol, which is now a first-class built-in citizen in JavaScript.  
     - But why it matters that it's now a first-class protocol, is that that means your own custom data structures, if you adhere to the iterator protocol. If you expose an iterator that adheres to that protocol, then any user of your code can use these syntactic built-in mechanisms with your data structure.
-    - All you have to do is expose an iterator on it that, when it calls .next, it returns another one of those point objects. And then somebody can use a dot dot dot or a for of loop to iterate over your data structure.
+    - All you have to do is expose an iterator on it that, when it calls .next, it returns another one of those point objects. And then somebody can use a `...` or a for of loop to iterate over your data structure.
 - It creates a standardized way of iterating through data sources.
 
 ## Data Structure without Iterators
@@ -98,169 +98,153 @@ letters;
 - The object is a great example, object does not have a built in iterator. 
 
 So if I make a regular plain old object and I call `for of` on it, I'm gonna end up getting a type error. 
-    - It's a type error because the for of loop tries to access the symbol.iterator location on that obj object, and it doesn't find anything defined there. 
+    - It's a type error because the for of loop tries to access the `symbol.iterator` location on that obj object, and it doesn't find anything defined there. 
 
-- It's kind of frustrating that of all the data structures that are built into the language, the one that they didn't make automatically iterable is the one that most of use. Which is we make our own JavaScript objects.
+- There's a variety of reasons why they didn't ship by default, butit is not actually that difficult to define our own iterator. 
 
-- There's a variety of reasons for why they didn't ship a default iterator on it...But the bottom line is that it is not actually that difficult to define our own iterator. 
+- And that's why we're talking about this is, is we wanna make our own data structures, and we wanna make our data structures adhere to the iterator protocol.
 
-And that's why we're talking about this is, is we wanna make our own data structures, and we wanna make our data structures adhere to the iterator protocol.
+- :star: So if we know that the `for of` loop or the `...` operator, the way that it works is it automatically tries to find something at that position, `symbol.iterator`, **then all we need to do is define one at that location.**
 
-[00:01:28]
-So if we know that the for of loop or the dot dot dot operator, the way that it works is it automatically tries to find something at that position, symbol.iterator, then all we need to do is define one at that location. And then the for of loop and the dot dot dot we'll use it.
+### iterators: imperative iterator
+```javascript
+var obj = {
+    a: 1,
+    b: 2,
+    c: 3,
+    [Symbol.iterator]: function(){
+        var keys = Object.keys(this);
+        var index = 0;
+        return {
+            next: () => 
+                (index < keys.length) ?
+                    { done: false, value: this[keys[index++]] } :
+                    { done: true, value: undefined }        
+        };
+    }
+};
 
-[00:01:46]
-So let's try first to create our own iterator factory function. I call it a factory function because every time you call it you would produce a new instance of your iterator. You can iterate something multiple, multiple times if you want to. So here it's a function, and on line 6, for example, you'll notice here that basically I'm just getting the list of keys for my object, which would be A, B, and C.
+[...obj];
+//[1,2,3]
+```
+- So let's try first to create our own _iterator factory function_. I call it a factory function because every time you call it you would produce a new instance of your iterator.
+- You can iterate something multiple, multiple times if you want to. So here it's a function, and on line 6, for example, you'll notice here that basically I'm just getting the list of keys for my object, which would be A, B, and C.
 
-[00:02:16]
-And then I am returning back an object. And my object has one property on it called next, that's what interators have, is they have a next on them. And when I call that next method, you'll notice that the next method does one thing, which is check to see if there's anymore to iterate over.
+- And then I am returning back an object. And my object has one property on it called `next`, that's what interators have, is they have a next on them. And when I call that next method, you'll notice that the next method does one thing, which is check to see if there's anymore to iterate over.
 
-[00:02:35]
-And if so, it returns an iterator result that is done false, and then it has the value. Otherwise it returns an iterator results with done true, and value undefined. Exactly the same way as all the built in iterators do, they return of two kinds of iterators results. So I'm simply returning the results until I've gone through all the keys.
+- And if so, it returns an iterator result that is done false, and then it has the value. Otherwise it returns an iterator results with done true, and value undefined. Exactly the same way as all the built in iterators do, they return of two kinds of iterators results. So I'm simply returning the results until I've gone through all the keys.
 
-[00:03:00]
-That now has the effect down on line 17, of actually, if you look down here on line 17, it has the effect of pulling out the values from that object into an array one, two and three. Same if I had done a for of loop, I would have been getting the values one, two and three out, okay?
+- That now has the effect down on line 17, of actually, if you look down here on line 17, it has the effect of pulling out the values from that object into an array one, two and three. Same if I had done a for of loop, I would have been getting the values one, two and three out, okay?
 
-[00:03:20]
-So, some of you may have noticed that I use an arrow function. And if you followed me much, you know that I'm not a big fan of arrow functions. So what am I doing here, am I just cheating to save space in the slides? Well, it turns out, this particular scenario is a great illustration of why you want to use the arrow function.
+- KS not not a big fan of arrow functions. So what am I doing here
+Well, it turns out, this particular scenario is a great illustration of why you want to use the arrow function Because I need `this` keyword inside of that function, and I need it to lexically adopt the parent context. I don't want it to define its own, I want it to adopt the parent context. That's exactly what the arrow context shines at doing, and so this is an appropriate usage of the arrow function.
 
-[00:03:42]
-Because I need this keyword inside of that function, and I need it to lexically adopt the parent context. I don't want it to define its own, I want it to adopt the parent context. That's exactly what the arrow context shines at doing, and so this is inappropriate, in my opinion, inappropriate usage of the arrow function.
-
-
+### Thoughts
+- :star: I include longer transcripts for the above, because it contextualizes the question that I personally had, that is how is an array of values being returned on line 18?
+    - I believe the answer is how the spread operator works under the hood. As mentioned earlier is that we are expected to implement our own `Symbol.iterator` method for our objects which in turn expects to have a `.next()` method at that location. We can test this by running the above code with the method name `advance` instead of `next` and we will get the type error mentioned: `obj is not iterable`.
 
 ## Generators
-[00:00:00]
->> Kyle Simpson: Even though it's not that difficult to make an object with a next method on it, and define what it does, I think we can all agree that this is a fairly imperative approach to adopting the iterator protocol for an object. So it would be nice if there was some other way of more declaratively creating an iterator producing function.
+ 
+- It would be nice if there was some other way of more declaratively creating an iterator producing function.
+And that leads us to generators...
+```javascript
+function *main() {
+    yield 1;
+    yield 2;
+    yield 3;
+    return 4;
+}
 
-[00:00:22]
-And that leads us to generators. On line 1 you see an * appear at the very top. Right at the very top you see an * that indicates that we are dealing with a special kind of function called a generator. This is a new type of function that was added in the ES6, and there's lots of complexities to generators that we're not gonna cover now.
+var it = main();
 
-[00:00:49]
-But the one thing that you need to understand is that generators when you invoke them, they don't run, they produce an iterator like we see here on line 8. And that iterator, since it's a standard iterator, has a dot next method on it like we see on line 10.
+it.next();   // { value: 1, done: false }
+it.next();   // { value: 2, done: false }
+it.next();   // { value: 3, done: false }
+it.next();   // { value: 4, done: true }
 
-[00:01:09]
-And when you call dot next on a iterator that's attached to a generator, it is going to give you the value that was yielded out from that generator. This new keyword yield allows a generator to produce additional values every time it's iterated over. So when I say yield 1, we get out and iterate a result that says value 1 done false.
+[...main()];
+// [1,2,3]
+```
+- On line 1 you see an `*` appear at the very top. Right at the very top you see an `*` **that indicates that we are dealing with a special kind of function called a generator**.
 
-[00:01:35]
-And when I say yield 2 we get value to done false and then value 3 done false. And then you'll notice because I use a return keyword on line 5 when we get the value 4 out, now it says done true, because we know for sure that iterator doesn't have any other results to produce.
+- This is a new type of function that was added in the ES6, and there's lots of complexities to generators that we're not gonna cover now.
 
-[00:01:58]
-There is, however, a bit of a gotcha with the usage of the return keyword inside a generator. Look down on line 15, when I do a dot-dot-dot over this generator, and it consumes the iterator according to that protocol, as soon as it sees a done true, it stops.
+- **When you invoke them, they don't run, they produce an iterator**(like we see here on line 8). And that iterator, since it's a standard iterator, has a  `.next` method on it like we see on line 10.
 
-[00:02:18]
-It doesn't keep the value at that moment it assumes that it is iterated past it, so that is the effect of throwing away the value 4. It's why it doesn't show up in the array down online 15. So what you need to know is if you're gonna make your own iterator using a generator like this you wanna make sure that you always yield values instead of returning values.
+- And when you call `.next` on a iterator that's attached to a generator, it is going to give you the value that was yielded out from that generator. 
+- This new keyword `yield` **allows a generator to produce additional values every time it's iterated over.** So when I say yield 1, we get out and iterate a result that says value 1 done false, etc. 
 
-[00:02:42]
-If you yield those values, they will come out according to the iterator protocol and then they'll be iterated over. It's generally considered a bad practice to return a value from a generator.
->> Kyle Simpson: So now, armed with this information, if we know that making a generator and yielding values that seems like a really good way of defining our own iterators and any object that we want.
+- And then you'll notice because I use a `return` keyword on line 5 when we get the value 4 out, now it says done true, because we know for sure that iterator doesn't have any other results to produce.
 
-[00:03:11]
-And if I could do a yield 1, 2, and 3, then I could also imagine, for example, having a for loop. And having a yield keyword inside of a for loop, and then yielding out values for each iteration of my loop. And that's how we'll actually define our iterator for our obj object.
+### yield and Gotcha using return
+- Gotcha with the usage of the `return` keyword inside a generator. Look down on line 15, it consumes the iterator according to that protocol, as soon as it sees a done true, it stops.
 
-[00:03:31]
-Line 5, you'll notice that I have this star here that indicates that this function is going to be that generator type. I'm putting it at that special location symbol.iterator, and it's just a concise method it doesn't take any inputs here. Its behavior by default is to iterate over all the keys.
+- It doesn't keep the value at that moment it assumes that it is iterated past it, so that is the effect of throwing away the value 4. Therefore, **if you're gonna make your own iterator using a generator like this you wanna make sure that you always yield values instead of returning values**.
 
-[00:03:51]
-And by the way, I'm using a for-of loop inside of my iterator. Why does that work? Because object.keys returns me an array, and arrays are iterables. So here I'm gonna loop over all of the elements in the array, being keys, and then I'm simply going to yield out this [key], which would be the value, so it would be the value 1 and then the value 2 and the value 3.
+- If you yield those values, they will come out according to the iterator protocol and then they'll be iterated over. It's generally considered a bad practice to return a value from a generator.
 
-[00:04:20]
-And the generator takes care of all of that plumbing about making iterators that have next methods that can be called, and preparing the iterator results, and all of that and all I need to focus on in this code is what value to yield out. That's what makes this a more declarative approach, is that I simply yield out my values.
+- If we know that making a generator and yielding values that seems like a really good way of defining our own iterators and any object that we want...
 
-[00:04:42]
-Here, I decided to make my iterator, in other words, the iteration over obj is that you don't care about the keys, you only care about the values. But imagine what would happen if instead of saying yield this of key, what would happen if I said yield key?
->> Kyle Simpson: Well, now the iteration would be seeing quote a, quote b, and quote c.
+### iterators: declarative iterators
+And if I could do a yield 1, 2, and 3, then I could also imagine, for example, having a `for` loop. And having a yield keyword inside of a for loop, and then yielding out values for each iteration of my loop. And that's how we'll actually define our iterator for our `obj` object.
+```javascript
+var obj = {
+    a: 1,
+    b: 2,
+    c: 3,
+    *[Symbol.iterator]() {
+        for (let key of Object.keys(this)) {
+            yield this[key];
+        }
+    }
+};
 
-[00:05:04]
-So there are multiple kinds of iterations that might be useful. Iterating over an object's values would be useful. Iterating over its keys would be useful. And by the way it turns out we have object.keys and we have object.values and they produce an iteration over the keys and the values.
+[...obj]
+// [1,2,3]
+```
+Line 5, you'll notice that I have this star here that indicates that this function is going to be that generator type. I'm putting it at that special location `symbol.iterator`, and it's just a concise method it doesn't take any inputs here. Its behavior by default is to iterate over all the keys.
 
-[00:05:27]
-But what about something that combine both of them? What if I wanted to get both the key and the value? Well then, I could define something called entries. An entry is a tuple, and a tuple is just a two-element array, and that's a fancy way of saying a two-element array.
+- Notice,  I'm using a ``for-of`` loop inside of my iterator. Why does that work? Because `object.keys` returns me an array, and arrays are iterables. So here I'm gonna loop over all of the elements in the array, being keys, and then I'm simply going to yield out this `[key]`, which would be the value, so it would be the value 1 and then the value 2 and the value 3.
 
-[00:05:48]
+- :star: And the generator takes care of all of that plumbing about making iterators that have next methods that can be called, and preparing the iterator results, **and all of that and all I need to focus on in this code is what value to yield out**. That's what makes this a more declarative approach, is that I simply yield out my values.
+
+### Iterating over keys, values, entries...
+So there are multiple kinds of iterations that might be useful. Iterating over an object's values would be useful. Iterating over its keys would be useful. And by the way it turns out we have `object.keys` and we have `object.values` and they produce an iteration over the keys and the values.
+
+ What if I wanted to get both the key and the value? Well then, I could define something called entries. An entry is a **tuple**, _and a tuple is just a two-element array, and that's a fancy way of saying a two-element array._
+
 A tuple where the first element in the tuple is the key, and the second element is the value. So what would I do on line 7? I would return square bracket array and I'd return key comma, this of key. And then someone would be able to receive both the keys and the values as they iterated over my data structure.
 
-[00:06:14]
+### Object.keys, Object.values, Object.entries
+So we have `object.values` to iterate over an object's values that you don't have to define your own anymore,you can just use that built-in utility.  
+- We have `object.keys`, which actually, we've had since ES5, and that gives us an array of all the keys. 
+- And now we have `object.entries`, which gives us an array of all those tuples.  
 
->> Kyle Simpson: So we have object.values to iterate over an object's values that you don't have to define your own anymore, you can just use that built-in utility. We have object.keys, which actually, we've had since ES5, and that gives us an array of all the keys. And now we have object.entries, which gives us an array of all those tuples.
+### Making Data Consumption Easy
+So if that's the built-in way of doing that then all you have to do is on your data structures define those three iterators yourself. Iterate over your values, iterate over your keys, and iterate over your entries. **You don't have to but it's a good idea to make it as easy for someone to consume your data structure as possible**.
 
-[00:06:38]
-So if that's the built-in way of doing that then all you have to do is on your data structures define those three iterators yourself. Iterate over your values, iterate over your keys, and iterate over your entries. You don't have to but it's a good idea to make it as easy for someone to consume your data structure as possible.
+If I then wanted to do something like `...`, and not get the default, because if you do `...` over an array, the default is to essentially give you array values. But If I wanted to be able to do `...` and get an iteration over its indexes, then instead of saying `...` array, I could say `...` array dot keys.
+ 
+Or I could say `...` array dot values or `...` array dot entries, or a `for-of` loop over the dot values, dot entries or dot keys. All of those would be standard ways. So when you make your own data structures, it's a good idea not only to define your default iterator, like we have here on line 5, you're making a default iterator.
 
-[00:07:01]
-
->> Kyle Simpson: If I then wanted to do something like dot dot dot, and not get the default, because if you do dot dot dot over an array, the default is to essentially give you array values. But If I wanted to be able to do dot dot dot and get an iteration over its indexes, then instead of saying dot dot dot array, I could say dot dot dot array dot keys.
-
-[00:07:28]
-Or I could say dot dot dot array dot values or dot dot dot array dot entries, or a for-of loop over the dot values, dot entries or dot keys. All of those would be standard ways. So when you make your own data structures, it's a good idea not only to define your default iterator, like we have here on line 5, you're making a default iterator.
-
-[00:07:51]
 But also go ahead expose any other way that would be useful for somebody to iterate over your data structure.
->> Student: I have a question.
->> Kyle Simpson: Yeah.
->> Student: Can you mutate your iterable in a for-of loop or are you gonna find yourself in a world of pain, or be prevented from that?
 
-[00:08:12]
-Like if I wanted to remove something in the middle and I want to do it in a for-of loop how much is that gonna hurt?
->> Kyle Simpson: That's an interesting question. So the standard answer to that is that the built in iterators that JavaScript has, the standardized iterator protocol, is that they essentially act as if they are iterating over a snapshot of the thing at the beginning.
+**Question:**  Can you mutate your iterable in a `for-of` loop, like if I wanted to remove something in the middle and I want to do it in a `for-of` loop how much is that gonna hurt?
 
-[00:08:37]
-So you're not seeing that implementation detail here where I would've captured the list of keys at the beginning and then captured all its values and then looped them out. The built in ones behave as if that is the case. And here if you were to mutate it you would actually be affecting the iteration as it went.
+- The standard answer to that is that the built in iterators that JavaScript has, the standardized iterator protocol, is that they essentially act as if they are iterating over a snapshot of the thing at the beginning.
+- So it's a good idea to consider _not_ doing mutation in line with your iteration.
+- JS will let you do it, but just because you can doesn't mean you should.
+- Especially for the consumer of your system where they iterate something out, and they are like wait what happened to this value, or why did I get this value?
+- Don't make mutations in line with it.
 
-[00:08:56]
-So you can do that but it can create some very weird results. Not for you as much as for the consumer of your system where they iterate something out, and they are like wait what happened to this value, or why did I get this value? So it's a good idea to consider not doing mutation in line with your iteration.
+**Question 2:** So I think that question is saying, do I have to list the generator as an in line concise method in the object literal, or can that be defined somewhere else?
+- And the answer you can point a property, like symbol.iterator, at an existing function reference that exists externally to the object. 
 
-[00:09:17]
-
->> Student: I ask cuz some languages will prevent you from it, so [LAUGH] yeah.
->> Kyle Simpson: Yeah, well, JavaScript's not gonna stop you from doing so, but it's basically modeling how you probably ought to do it, which is capture your context, or your snapshot, if you will, at iterate over that.
-
-[00:09:31]
-Don't make mutations in line with it.
->> Student2: Could you abstract that generator out of the object and refer to it in the object in that last space of the object?
->> Student: Something going on the generate side. [LAUGH]
->> Kyle Simpson: So I think that question is saying, do I have to list the generator as an in line concise method in the object literal, or can that be defined somewhere else?
-
-[00:10:01]
-And the answer you can point a property, like symbol.iterator, at an existing function reference that exists externally to the object. It is much more common to define the iterator directly on the object. But if that doesn't make sense in your scenario, or maybe you're gonna put that iterator on the prototype of some object in your object chain or something like that.
-
-[00:10:27]
-It doesn't physically have to actually be added to the object literal, just has to be accessible to that object when somebody tries to iterate over it. Because the dot-dot-dot operator and the for-of operator, they're sort of dumb, they're basically just gonna say, do you have access to a, can you give me something at this property location?
-
-[00:10:46]
-And if at that moment they do, great, and if not, then they're not gonna be able to iterate over your object.
->> Kyle Simpson: Other questions about iterators and generators?
-
+- It doesn't physically have to actually be added to the object literal, just has to be accessible to that object when somebody tries to iterate over it.
 
 ## Iterator & Generator Exercise
-[00:00:00]
->> Kyle Simpson: All right, so interators and generators. They are an exciting topic, but it is hard to kind of wrap your brain around until you've actually put your fingers on the keyboard and tried it yourself. So you're gonna get a chance with this particular exercise. Here's what you're gonna be creating.
-
-[00:00:15]
-You're gonna take this numbers object which we've defined here on lines 1, 2, and 3, and you're going to make it an iterable object. But it's not gonna be iterating over any data that it has, it's going to be producing data sort of virtually. And what you want it to do is that if you do a default iteration over it, like you see with the for of loop, you want it to be able to spit out the values from 0 up to 100, incrementing by 1.
-
-[00:00:42]
-So you should define a symbol.iterator on it that can loop out all of those values, yield out all of those values from 0 to a 100. However, that's only the default iteration. We also want to support customizing the iteration by calling the iterator directly and passing in certain information.
-
-[00:01:03]
-So we want to be able to tell it I want the numbers object to iterate from 6 up to 30 step counting by 4, and that should be able to print out those values. Now, what you see here is a reference to being able to print out those values, which means you're gonna wanna turn this into a template literal.
-
-[00:01:26]
-And you're gonna wanna iterate over the numbers object and put it into an array that can then be stringified. So you're probably gonna wanna use something like the hint here, which is dot, dot, dot, spreading out the iterator into an array, and then dropping the array in. So make sure to take note of that hint.
-
-[00:01:45]
-But your numbers symbol.iterator is just a regular function, so it needs to take some inputs. Using what you know about Destructuring, you should have some named inputs that have some defaults where the default is to start at 0 and end at 100, stepping by 1. And then you should be able to call that function and use some named arguments.
-
-[00:02:08]
-So in other words, we're pulling together a variety of things that we talked about so far into one exercise. This is not actually that many lines of code, maybe a total of five to eight lines of code. But the real trick here is to think about how do I bring each of these pieces together?
-
-[00:02:25]
-Start by figuring out how do I define my iterator? How do I pass it some inputs? And how do I iterate over it? Okay, so we would normally take probably about ten minutes or so for this exercise, so we'll come back in a few minutes, and we'll talk about the solution.
-
-[00:02:40]
-As always, if you get a bit stuck on this exercise, feel free to take a look at the ex.fixed solution file.
-
-
+ 
+ 
 ## Iterator & Generator Solution
 [00:00:00]
 >> Kyle Simpson: All right, welcome back. I trust you found that nice and challenging. Let's take a look at how to define an iterator, to make our numbers, object initerable. First we know we need to define a generator, and we're going to put it at this location .Symbol.iterator. And it's a function that we're going to want to receive some inputs.
